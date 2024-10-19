@@ -1,0 +1,19 @@
+html, body {
+    background: linear-gradient(180deg, #3C3C43 0%, #6F6F78 95%);
+    height: 100%;
+    margin: 0;
+}
+.admin-home {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    background: linear-gradient(180deg, #14AE5C 0%, #084826 100%);
+    height: 60px;
+    align-items: center;
+    justify-content:left;
+    display: flex;
+}
+
