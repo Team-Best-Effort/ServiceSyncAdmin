@@ -1,35 +1,81 @@
-import React from "react"; // Import React for creating components.
+import React, { useState } from "react"; // Import React and hooks for state management.
 import './CSS/LoginPage.css'; // Import custom CSS for styling.
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import navigation utilities.
+import { signInWithEmailAndPassword } from "firebase/auth"; // Firebase authentication function.
+import { auth } from "../pages/APIs/firebase.js"; // Import Firebase auth instance.
 
 const LoginPage = () => {
+    const [email, setEmail] = useState(""); // State for email input.
+    const [password, setPassword] = useState(""); // State for password input.
+    const [companyCode, setCompanyCode] = useState(""); // State for company code input.
+    const [error, setError] = useState<string | null>(null); // State for error messages.
+    const navigate = useNavigate(); // Hook for navigation.
+
+    // Handle form submission for login
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault(); // Prevent default form submission behavior.
+
+        if (companyCode.trim() === "") {
+            setError("Company Code is required.");
+            return;
+        }
+
+        try {
+            // Attempt to log in using Firebase Authentication
+            await signInWithEmailAndPassword(auth, email, password);
+            navigate("/AdminHome"); // Redirect to AdminHome on successful login
+        } catch (err) {
+            setError("Invalid email or password. Please try again.");
+        }
+    };
+
     return (
         <div className="login-container">
             <div className="login-box">
                 <div className="logo">
-                    {/* Logo placeholder - you can replace this with an actual image */}
+                    {/* Logo placeholder */}
                     <img src="https://via.placeholder.com/50" alt="Logo" />
                 </div>
                 <h2>Sign In</h2>
-                <p>Don't have an account? <a href="#signup">Sign Up</a></p>
+                <p>Don't have an account? <Link to="/RegisterPage">Sign Up</Link></p>
 
-                <div className="alert-box">
-                    {/* Alert notification box */}
-                    <p>Please log in with your email, password, and company key.</p>
-                </div>
+                {error && (
+                    <div className="alert-box">
+                        {/* Display error messages */}
+                        <p>{error}</p>
+                    </div>
+                )}
 
-                <form>
+                <form onSubmit={handleLogin}>
                     <div className="input-group">
                         <label>Email*</label>
-                        <input type="email" placeholder="Your Email" required />
+                        <input
+                            type="email"
+                            placeholder="Your Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
                     </div>
                     <div className="input-group">
                         <label>Password*</label>
-                        <input type="password" placeholder="******" required />
+                        <input
+                            type="password"
+                            placeholder="******"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
                     </div>
                     <div className="input-group">
                         <label>Company Code*</label>
-                        <input type="text" placeholder="******" required />
+                        <input
+                            type="text"
+                            placeholder="******"
+                            value={companyCode}
+                            onChange={(e) => setCompanyCode(e.target.value)}
+                            required
+                        />
                     </div>
                     <div className="options">
                         <label>
@@ -37,8 +83,7 @@ const LoginPage = () => {
                         </label>
                         <a href="#forgot-password">Forgot Password?</a>
                     </div>
-                    <Link to="/AdminHome"><button type="submit" className="sign-in-button">Sign In</button></Link>
-                    <Link to="/AdminHome"><button type="button" className="sign-up-button">Sign Up</button></Link>
+                    <button type="submit" className="sign-in-button">Sign In</button>
                 </form>
             </div>
         </div>
