@@ -5,11 +5,12 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import DefaultHome from "./pages/DefaultHome";
 import AdminCalendar from "./pages/AdminCalendar";
 import AdminHome from "./pages/AdminHome";
 import AdminPayroll from "./pages/AdminPayroll";
-import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
+import SignInPage from "./pages/SignInPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import CompanyCreation from "./pages/CompanyCreation";
 import AdminJobPage from "./pages/AdminJobPage";
 import EmployeeCalendar from "./pages/EmployeeCalendar";
@@ -44,58 +45,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<DefaultHome />} />
-          <Route path="/LoginPage" element={<LoginPage />} />
-          <Route path="/CompanyCreation" element={<CompanyCreation />} />
-
-          {/* Protected Routes */}
-          <Route
-            path="/AdminHome"
-            element={
-              <ProtectedRoute>
-                <AdminHome />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/AdminCalendar"
-            element={
-              <ProtectedRoute>
-                <AdminCalendar />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/AdminPayroll"
-            element={
-              <ProtectedRoute>
-                <AdminPayroll />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/AdminJobPage"
-            element={
-              <ProtectedRoute>
-                <AdminJobPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/EmployeeCalendar"
-            element={
-              <ProtectedRoute>
-                <EmployeeCalendar />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<AdminHome />} />
+        <Route path="/SignUp" element={<SignUpPage />} />
+        <Route path="/SignIn" element={<SignInPage />} />
+        <Route path="/ForgotPassword" element={<ForgotPasswordPage />} />
+        <Route path="/AdminCalendar" element={<AdminCalendar />} />
+        <Route path="/AdminHome" element={<AdminHome />} />
+        <Route path="/AdminPayroll" element={<AdminPayroll />} />
+        <Route path="/AdminJobPage" element={<AdminJobPage />} />
+        <Route path="/CompanyCreation" element={<CompanyCreation />} />
+        <Route path="/EmployeeCalendar" element={<EmployeeCalendar />} />
+      </Routes>
+    </Router>
   );
 }
 

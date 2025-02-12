@@ -6,12 +6,12 @@ import { Link } from 'react-router-dom'; // You can reuse the same CSS file
 interface Invoice {
     Id: string;
     TotalAmt: number;
-    CurrencyRef: {name: string};
+    CurrencyRef: { name: string };
 }
 
 const AdminPayroll = () => {
     const location = useLocation();
-    const [invoices, setInvoices] = useState<Invoice[]> ([]);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [invoiceError, setInvoiceError] = useState<string | null>(null);
     const [isTokenFetched, setIsTokenFetched] = useState(false);
 
@@ -22,7 +22,7 @@ const AdminPayroll = () => {
             try {
                 // Delay for 500ms to give the server time to set the token
                 await new Promise(resolve => setTimeout(resolve, 500));
-    
+
                 const response = await fetch('http://localhost:5001/api/check-token');
                 if (!response.ok) {
                     throw new Error("Failed to check token status");
@@ -39,10 +39,10 @@ const AdminPayroll = () => {
                 console.error("Error checking token status:", error);
             }
         };
-    
+
         checkTokenStatus();
     }, []);
-    
+
     useEffect(() => {
         if (isTokenFetched) {
             console.log("Fetching invoices..."); // Debugging log
@@ -60,7 +60,7 @@ const AdminPayroll = () => {
                 .catch(error => setInvoiceError(error.message));
         }
     }, [isTokenFetched]);
-    
+
 
     //authorization for Quickbooks hook
     useEffect(() => {
@@ -96,7 +96,7 @@ const AdminPayroll = () => {
                     <Link to="/AdminCalendar"><button>Calendar</button></Link>
                     <Link to="/AdminJobPage"><button>Jobs</button></Link>
                     <Link to="/AdminPayroll"><button>Payroll</button></Link>
-                    <Link to="/LoginPage"><button>Log Out</button></Link>
+                    <Link to="/SignIn"><button>Log Out</button></Link>
                     <div className="user-info">User Info Here</div>
                 </div>
             </header>

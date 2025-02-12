@@ -7,7 +7,7 @@ import GoogleCalendar from "./APIs/GoogleCalendar"; // Ensure this path is corre
 
 const AdminCalendar = () => {
     const [date, setDate] = useState(new Date());
-    
+
     // Function to handle date selection (example use case)
     const handleSelectDate = () => {
         const newDate = new Date(2024, 9, 20); // Note: Month is 0-indexed in JS
@@ -27,7 +27,7 @@ const AdminCalendar = () => {
                     <Link to="/AdminCalendar"><button>Calendar</button></Link>
                     <Link to="/AdminJobPage"><button>Jobs</button></Link>
                     <Link to="/AdminPayroll"><button>Payroll</button></Link>
-                    <Link to="/LoginPage"><button>Log Out</button></Link>
+                    <Link to="/SignIn"><button>Log Out</button></Link>
                     <div className="user-info">User Info Here</div>
                 </div>
             </header>

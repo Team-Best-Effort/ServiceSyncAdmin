@@ -15,7 +15,7 @@ const AdminHome = () => {
                     <Link to="/AdminCalendar"><button>Calendar</button></Link>
                     <Link to="/AdminJobPage"><button>Jobs</button></Link>
                     <Link to="/AdminPayroll"><button>Payroll</button></Link>
-                    <Link to="/LoginPage"><button>Log Out</button></Link>
+                    <Link to="/SignIn"><button>Log Out</button></Link>
                     <Link to="/EmployeeCalendar"><button>Employee Calendar</button></Link>
                     <div className="user-info">User Info Here</div>
                 </div>
