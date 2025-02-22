@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import { getDatabase, ref, set, get, child, update, remove } from 'firebase/database';
 import Button from '@mui/material/Button';
 import { EventClickArg } from '@fullcalendar/core';
 import Dialog from '@mui/material/Dialog';
@@ -15,9 +14,10 @@ import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
-import { initializeApp } from 'firebase/app';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Box } from '@mui/material';
+import { ref, set, get, child, update, remove } from 'firebase/database';
+import { db } from '../../../auth';
 
 // Adjust the Task interface for Realtime Database
 interface Task {
@@ -30,21 +30,6 @@ interface Task {
   createdAt: string;
 }
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-export { db };
 
 export function Calendar() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -57,8 +42,6 @@ export function Calendar() {
   const [start, setStart] = useState<string>('');
   const [end, setEnd] = useState<string>('');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-
-  const db = getDatabase();
 
   useEffect(() => {
     const fetchTasks = async () => {
