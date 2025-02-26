@@ -8,6 +8,12 @@ interface Token {
 
 const router = Router();
 
+console.log('Loading environment variables...');
+console.log('CLIENT_ID from env:', process.env.CLIENT_ID);
+console.log('CLIENT_SECRET from env:', process.env.CLIENT_SECRET);
+console.log('REDIRECT_URI from env:', process.env.REDIRECT_URI);
+console.log('ENVIRONMENT from env:', process.env.ENVIRONMENT);
+
 const oauthClient = new OAuthClient({
   clientId: process.env.CLIENT_ID || '',
   clientSecret: process.env.CLIENT_SECRET || '',
