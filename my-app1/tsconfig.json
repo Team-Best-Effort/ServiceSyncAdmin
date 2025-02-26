@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -22,19 +18,25 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
     "target": "ES2017"
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "(dashboard)/**/*.ts",
+    "(dashboard)/**/*.tsx",
+    "calendar/**/*.ts",
+    "calendar/**/*.tsx",
+    "jobs/**/*.ts",
+    "jobs/**/*.tsx",
+    "payroll/**/*.ts",
+    "payroll/**/*.tsx",
+    "api/**/*.ts",
+    "api/**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules", "qb_backend"]
 }

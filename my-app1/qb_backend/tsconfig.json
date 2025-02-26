@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "target": "es2016",
+      "module": "commonjs",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "outDir": "./dist",
+      "rootDir": "./",
+      "baseUrl": "./",
+      "typeRoots": ["./node_modules/@types", "./"] // Use only qb_backend/node_modules/@types and local .d.ts files
+    },
+    "include": ["**/*.ts", "**/*.d.ts"], // Include only .ts and .d.ts files in qb_backend
+    "exclude": ["node_modules", "dist", "../node_modules"] // Explicitly exclude both local and parent node_modules
+  }
