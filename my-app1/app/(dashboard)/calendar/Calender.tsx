@@ -160,10 +160,13 @@ export function Calendar() {
       const taskRef = ref(db, `ServiceSync/${selectedTask.id}`);
       await remove(taskRef);
       setTasks(tasks.filter((t) => t.id !== selectedTask.id));
+      handleCloseDeleteDialog(); // Close the delete dialog after deletion
+      handleCloseModifyDialog(); // Close the modify dialog after deletion
     } catch (error) {
       console.error('Error deleting task:', error);
     }
   };
+  
 
   const handleEventClick = (arg: EventClickArg) => {
     const task = tasks.find((t) => t.id === arg.event.id);
