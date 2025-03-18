@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
-import { getDatabase, ref, onValue, update, push } from "firebase/database";
+import { DataSnapshot, ref, onValue, update, push, off } from "firebase/database";
 import { db } from "./lib/firebase";
+import { format } from "date-fns";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -25,45 +26,76 @@ export default function JobsTable() {
   const [assignedTo, setAssignedTo] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [phoneNumber, setPhoneNumber] = React.useState("");
+  const [dateTime, setDateTime] = React.useState("");
   const [status, setStatus] = React.useState("Assigned");
 
-  // Fetch jobs and employees from Firebase in real-time
+  const mountedRef = React.useRef(false);
+
   React.useEffect(() => {
+    mountedRef.current = true;
+
     const jobsRef = ref(db, "jobs");
     const employeesRef = ref(db, "employees");
 
-    // Fetch jobs
-    onValue(jobsRef, (snapshot) => {
+    const handleJobsSnapshot = (snapshot: DataSnapshot) => {
+      if (!mountedRef.current) return;
       const data = snapshot.val();
       if (data) {
         const jobList = Object.entries(data).map(([id, job]) => ({
           id,
           ...(job as object),
         }));
-        setJobs(jobList);
+        // Delay the state update to ensure mounting is complete.
+        setTimeout(() => {
+          if (mountedRef.current) {
+            setJobs(jobList);
+          }
+        }, 0);
       } else {
-        setJobs([]);
+        setTimeout(() => {
+          if (mountedRef.current) {
+            setJobs([]);
+          }
+        }, 0);
       }
-    });
+    };
 
-    // Fetch employees
-    // Fetch employees
-    onValue(employeesRef, (snapshot) => {
+    const handleEmployeesSnapshot = (snapshot: DataSnapshot) => {
+      if (!mountedRef.current) return;
       const data = snapshot.val();
       if (data) {
-        const employeeList = Object.entries(data).map(([id, employee]: [string, any]) => ({
-          id,
-          name: employee.name,
-          phoneNumber: employee.phone,
-          ...employee,
-        }));
-        setEmployees(employeeList);
+        const employeeList = Object.entries(data).map(
+          ([id, employee]: [string, any]) => ({
+            id,
+            name: employee.name,
+            phoneNumber: employee.phone,
+            ...employee,
+          })
+        );
+        setTimeout(() => {
+          if (mountedRef.current) {
+            setEmployees(employeeList);
+          }
+        }, 0);
       } else {
-        setEmployees([]);
+        setTimeout(() => {
+          if (mountedRef.current) {
+            setEmployees([]);
+          }
+        }, 0);
       }
-    });
+    };
 
+    onValue(jobsRef, handleJobsSnapshot);
+    onValue(employeesRef, handleEmployeesSnapshot);
+
+    return () => {
+      mountedRef.current = false;
+      off(jobsRef, "value", handleJobsSnapshot);
+      off(employeesRef, "value", handleEmployeesSnapshot);
+    };
   }, []);
+  
 
   const formatPhoneNumber = (input: string) => {
     const numbers = input.replace(/\D/g, "");
@@ -78,14 +110,15 @@ export default function JobsTable() {
     setAssignedTo("");
     setAddress("");
     setPhoneNumber("");
+    setDateTime("");
     setStatus("Assigned");
   };
 
   const handleSubmitJob = async () => {
-    if (!jobType || !assignedTo || !address || !phoneNumber) return;
+    if (!jobType || !assignedTo || !address || !phoneNumber || !dateTime) return;
 
     const newJobRef = push(ref(db, "jobs"));
-    const newJob = { jobType, assignedTo, address, phoneNumber, status };
+    const newJob = { jobType, assignedTo, address, phoneNumber, dateTime, status };
 
     try {
       await update(newJobRef, newJob);
@@ -101,6 +134,7 @@ export default function JobsTable() {
     setAssignedTo(job.assignedTo);
     setAddress(job.address);
     setPhoneNumber(job.phoneNumber || employees.find(emp => emp.name === job.assignedTo)?.phoneNumber || "");
+    setDateTime(job.dateTime);
     setStatus(job.status);
     setOpenModifyDialog(true);
   };
@@ -110,11 +144,11 @@ export default function JobsTable() {
 
     const jobRef = ref(db, `jobs/${selectedJob.id}`);
     try {
-      await update(jobRef, { jobType, assignedTo, address, phoneNumber, status });
+      await update(jobRef, { jobType, assignedTo, address, phoneNumber, dateTime, status });
       setJobs((prevJobs) =>
         prevJobs.map((job) =>
           job.id === selectedJob.id
-            ? { ...job, jobType, assignedTo, address, phoneNumber, status }
+            ? { ...job, jobType, assignedTo, address, phoneNumber, dateTime, status }
             : job
         )
       );
@@ -152,6 +186,22 @@ export default function JobsTable() {
     { field: "jobType", headerName: "Job Type", width: 200 },
     { field: "assignedTo", headerName: "Assigned To", width: 150 },
     { field: "address", headerName: "Address", width: 200 },
+    {
+      field: "dateTime",
+      headerName: "Date",
+      width: 200,
+      renderCell: (params) => {
+        const dateValue = params.value;
+        const date = new Date(dateValue);
+        // Check if the date is valid
+        if (isNaN(date.getTime())) {
+          return <span>Invalid Date</span>;
+        }
+        const formattedDate = format(date, "MMM dd, yyyy, h:mm a");
+        return <span>{formattedDate}</span>;
+      },
+    },
+    
     { field: "phoneNumber", headerName: "Phone Number", width: 150 },
     {
       field: "status",
@@ -281,6 +331,18 @@ export default function JobsTable() {
               InputLabelProps={{ style: { color: "#fff" } }}
             />
           </Box>
+          <Box sx={{ mt: "15px" }}>
+            <TextField
+              fullWidth
+              label="Date"
+              type="datetime-local"
+              value={dateTime}
+              onChange={(e) => setDateTime(e.target.value)}
+              variant="outlined"
+              InputLabelProps={{ style: { color: "#fff" }, shrink: true}}
+              InputProps={{ style: { color: "#fff", backgroundColor: "#1c1c1c" } }}
+            />
+          </Box>
           <Box sx={{ mt: "30px" }}>
             <TextField
               fullWidth
@@ -376,6 +438,18 @@ export default function JobsTable() {
               variant="outlined"
               InputProps={{ style: { color: "#fff", backgroundColor: "#1c1c1c" } }}
               InputLabelProps={{ style: { color: "#fff" } }}
+            />
+          </Box>
+          <Box sx={{ mt: "15px" }}>
+            <TextField
+              fullWidth
+              label="Date"
+              type="datetime-local"
+              value={dateTime}
+              onChange={(e) => setDateTime(e.target.value)}
+              variant="outlined"
+              InputLabelProps={{ style: { color: "#fff" }, shrink: true}}
+              InputProps={{ style: { color: "#fff", backgroundColor: "#1c1c1c" } }}
             />
           </Box>
           <Box sx={{ mt: "15px" }}>
