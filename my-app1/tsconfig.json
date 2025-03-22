@@ -10,8 +10,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
+    "target": "es2017",
     "plugins": [
       {
         "name": "next"
@@ -20,22 +21,15 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "target": "ES2017"
+    "types": ["vitest/globals", "node", "@testing-library/jest-dom"],
+    "baseUrl": "."
   },
   "include": [
     "next-env.d.ts",
     "app/**/*.ts",
     "app/**/*.tsx",
-    "(dashboard)/**/*.ts",
-    "(dashboard)/**/*.tsx",
-    "calendar/**/*.ts",
-    "calendar/**/*.tsx",
-    "jobs/**/*.ts",
-    "jobs/**/*.tsx",
-    "payroll/**/*.ts",
-    "payroll/**/*.tsx",
-    "api/**/*.ts",
-    "api/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules", "qb_backend"]
