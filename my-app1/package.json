@@ -5,7 +5,8 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "test": "vitest"
     },
     "dependencies": {
         "@emotion/react": "^11",
@@ -38,13 +39,19 @@
         "xlsx": "^0.18.5"
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/react": "^16.2.0",
         "@types/axios": "^0.9.36",
         "@types/lodash": "^4.17.16",
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
+        "@vitejs/plugin-react": "^4.3.4",
         "eslint": "^8",
         "eslint-config-next": "^15",
-        "typescript": "^5"
+        "jsdom": "^26.0.0",
+        "typescript": "^5",
+        "vite": "^6.2.2",
+        "vitest": "^3.0.9"
     }
 }

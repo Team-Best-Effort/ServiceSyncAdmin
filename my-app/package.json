@@ -50,7 +50,17 @@
     "@types/gapi": "^0.0.47",
     "@types/gapi.auth2": "^0.0.61",
     "@types/gapi.calendar": "^3.0.11",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^27.5.1",
     "msw": "^2.7.3"
+  },
+  "jest": {
+  "transformIgnorePatterns": [
+    "node_modules/(?!(gapi-script|@bundled-es-modules|msw|@mswjs))"
+  ],
+  "moduleNameMapper": {
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/src/__mocks__/fileMock.js"
   }
+}
 }
