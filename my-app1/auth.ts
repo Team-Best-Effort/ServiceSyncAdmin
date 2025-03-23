@@ -63,7 +63,6 @@ async function finduserInfo(email: string): Promise<{
         name: string;
         role: string;
         image: string;
-        password: string;
       };
       return {
         email: userData.email,
