@@ -6,7 +6,6 @@ const theme = createTheme({
   cssVariables: {
     colorSchemeSelector: "data-toolpad-color-scheme",
   },
-
   colorSchemes: {
     light: {
       palette: {
@@ -51,10 +50,19 @@ const theme = createTheme({
   },
 
   components: {
+    
     MuiBreadcrumbs: {
       styleOverrides: {
         root: {
           visibility: "hidden",
+        },
+      },
+    },
+
+    MuiTypography: {
+      styleOverrides: {
+        h4: {
+          display: "none", // Hides page title (if it's an <h4>)
         },
       },
     },

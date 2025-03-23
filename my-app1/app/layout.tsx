@@ -128,6 +128,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
               theme={theme}
               session={session}
             >
+          
               {props.children}
              
             </NextAppProvider>
