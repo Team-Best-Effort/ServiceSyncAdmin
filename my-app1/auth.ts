@@ -5,6 +5,8 @@ import { initializeApp } from 'firebase/app';
 import { ref, query, getDatabase, orderByChild, equalTo, get } from 'firebase/database';
 import { use } from 'react';
 import { db } from './app/(dashboard)/editProfile/lib/firebase'
+import { diff_name_for_auth } from './app/(dashboard)/editProfile/lib/firebase';
+import {signInWithEmailAndPassword } from "firebase/auth";
 
 interface User {
   name: string;
@@ -19,39 +21,19 @@ if (db.app.name != 'service_sync') {
   console.error('Error, program says db is not loaded.');
   throw new Error('Database is not loading properly refer to duplicate declarations of db in application.');
 }
-
-async function findAuthEntry(email: string, password: string): Promise<boolean> {
+async function isAuthFirebase(email: string, password: string): Promise<boolean> {  
   try {
-    // Create a reference to the Authentication node
-    const authRef = ref(db, 'Authentication');
-
-    // Query where the 'email' child property equals the provided email
-    const authQuery = query(
-      authRef,
-      orderByChild('email'),    // Use the property name "email", not the email value
-      equalTo(email)            // Match the email value
-    );
-
-    // Execute the query
-    const snapshot = await get(authQuery);
-
-    if (snapshot.exists()) {
-      // Check if any returned entry has a matching password
-      const data = snapshot.val();
-      const users = Object.values(data); // Convert to array of user objects
-      for (const user of users) {
-        if ((user as any).password === password) { // Type assertion; refine as needed
-          return true;
-        }
-      }
-      return false; // Email found but password didn't match
-    } else {
-      return false; // No matching email found
-    }
-  } catch (error) {
-    console.error('[Auth Error] Database query failed.');
-    throw new Error('Authentication service is currently unavailable.');
-
+    const userCredential = await signInWithEmailAndPassword(diff_name_for_auth, email, password);
+    const user = userCredential.user;
+    
+    // If successful, return true (indicating authentication is successful)
+    return true;
+  } catch (error: unknown) {
+    const errorMessage = (error as Error).message; // Cast to Error type
+    console.error('********Firebase auth error*******:', errorMessage);
+    
+    // If there's an error, return false (indicating authentication failed)
+    return false;
   }
 }
 
@@ -81,7 +63,6 @@ async function finduserInfo(email: string): Promise<{
         name: string;
         role: string;
         image: string;
-        password: string;
       };
       return {
         email: userData.email,
@@ -112,7 +93,7 @@ const providers: Provider[] = [
         return null;
       }
 
-      const result = await findAuthEntry(
+      const result = await isAuthFirebase(
         String(credentials.email),
         String(credentials.password)
       );
