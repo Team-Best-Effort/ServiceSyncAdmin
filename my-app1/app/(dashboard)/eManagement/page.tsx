@@ -1,7 +1,8 @@
 "use client";
 import * as React from "react";
 import { getDatabase, ref, onValue, set, update, remove, get } from "firebase/database"; // Added 'get' for uniqueness check
-import { db } from "./lib/firebase";
+import { db, diff_name_for_auth } from "../editProfile/lib/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -64,29 +65,38 @@ export default function EmployeeManagement() {
     setPassword(""); // Reset password
   };
 
-  // Submit New Employee with custom ID and password
-  const handleSubmitEmployee = async () => {
-    if (!name || !email || !phone || !password) return;
-
-    let newEmployeeId;
-    let exists = true;
-    while (exists) {
-      newEmployeeId = generateEmployeeId();
-      const checkRef = ref(db, `employees/${newEmployeeId}`);
-      const snapshot = await get(checkRef);
-      exists = snapshot.exists();
-    }
-
-    const newEmployeeRef = ref(db, `employees/${newEmployeeId}`);
-    const newEmployee = { name, email, phone, password }; // Include password in Firebase
-
-    try {
-      await set(newEmployeeRef, newEmployee);
-      setOpenCreateDialog(false);
-    } catch (error) {
-      console.warn("Could not add employee. Please try again.");
-    }
-  };
+    // Submit New Employee with custom ID and password
+    const handleSubmitEmployee = async () => {
+      if (!name || !email || !phone || !password) return;
+      try {
+        const userCredential = await createUserWithEmailAndPassword(diff_name_for_auth, email, password);
+        const user = userCredential.user;
+        console.log('*********Read********: Success adding a new user');
+        // Any further actions after success can go here
+        let newEmployeeId;
+        let exists = true;
+        while (exists) {
+          newEmployeeId = generateEmployeeId();
+          const checkRef = ref(db, `employees/${newEmployeeId}`);
+          const snapshot = await get(checkRef);
+          exists = snapshot.exists();
+        }
+        const newEmployeeRef = ref(db, `employees/${newEmployeeId}`);
+        const newEmployee = { name, email, phone, password }; // Include password in Firebase
+        try {
+          await set(newEmployeeRef, newEmployee);
+          setOpenCreateDialog(false);
+        } catch (error) {
+          console.warn("Could not add employee. Please try again.");
+        }
+      } catch (error: unknown) {
+        const errorMessage = (error as Error).message; // Cast to Error type
+        console.error('******Read******', errorMessage);
+        // Any further actions after error can go here
+      }
+  
+    };
+  
 
   // Open Edit Employee Dialog
   const handleEdit = (employee: any) => {
@@ -104,10 +114,11 @@ export default function EmployeeManagement() {
 
     const employeeRef = ref(db, `employees/${selectedEmployee.id}`);
     try {
-      await update(employeeRef, { name, email, phone, password });
+      
+      await update(employeeRef, { name, email, phone });
       setEmployees((prevEmployees) =>
         prevEmployees.map((emp) =>
-          emp.id === selectedEmployee.id ? { ...emp, name, email, phone, password } : emp
+          emp.id === selectedEmployee.id ? { ...emp, name, email, phone } : emp
         )
       );
       setOpenEditDialog(false);
