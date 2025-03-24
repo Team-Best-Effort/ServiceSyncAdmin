@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Button, Typography, CircularProgress, Box } from '@mui/material';
 import axios, { AxiosResponse, AxiosError } from 'axios';
+import { PageHeader, PageHeaderToolbar } from '@toolpad/core/PageContainer';
 
 interface CompanyInfo {
   CompanyName?: string;
@@ -13,7 +14,13 @@ const PayrollPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Track OAuth status
-
+  const pageHeaderToolbar = {
+    title: 'Payrolls',
+    breadcrumbs: [
+      { title: 'Dashboard', path: '/' },
+      { title: 'Payroll', path: '/payroll' },
+    ],
+  };
   // Fetch company info from backend with proper typing and error handling
   const fetchCompanyInfo = useCallback(async () => {
     setLoading(true);
