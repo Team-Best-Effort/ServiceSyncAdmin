@@ -14,12 +14,9 @@ import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
 import { ref, set, get, child, update, remove } from 'firebase/database';
 import { db } from '../../../auth';
 
-// Adjust the Task interface for Realtime Database
 interface Task {
   id: string;
   title: string;
@@ -29,7 +26,6 @@ interface Task {
   end?: string | null;
   createdAt: string;
 }
-
 
 export function Calendar() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -59,30 +55,22 @@ export function Calendar() {
           setTasks([]);
         }
       } catch (error) {
-        console.warn('Failed to fetch tasks from Firebase. Please check your database connection.');
+        console.warn('Failed to fetch tasks from Firebase:', error);
       }
     };
     fetchTasks();
   }, []);
 
-  const handleOpenAddDialog = () => {
-    setOpenAddDialog(true);
-  };
+  const handleOpenAddDialog = () => setOpenAddDialog(true);
 
   const handleCloseAddDialog = () => {
     setOpenAddDialog(false);
-    setTitle('');
-    setDescription('');
-    setStatus('pending');
-    setStart('');
-    setEnd('');
+    resetForm();
   };
 
   const handleAddTask = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!start) {
-      return;
-    }
+    if (!start) return;
     try {
       const newTaskRef = ref(db, `ServiceSync/${Date.now().toString()}`);
       const newTaskData = {
@@ -90,18 +78,16 @@ export function Calendar() {
         description: description.trim() || 'No description',
         status,
         start,
-        end: end.trim() === '' ? null : end,
-        createdAt: new Date().toISOString(),
+        end: end || null,
+        createdAt: new Date().toISOString(), // This is the only place we use ISO for createdAt
       };
       await set(newTaskRef, newTaskData);
       setTasks([...tasks, { id: newTaskRef.key!, ...newTaskData }]);
       handleCloseAddDialog();
     } catch (error) {
-      console.warn('Could not add task. Please try again.');
+      console.warn('Could not add task:', error);
     }
-
   };
-
 
   const handleOpenModifyDialog = (task: Task) => {
     setSelectedTask(task);
@@ -115,12 +101,7 @@ export function Calendar() {
 
   const handleCloseModifyDialog = () => {
     setOpenModifyDialog(false);
-    setSelectedTask(null);
-    setTitle('');
-    setDescription('');
-    setStatus('pending');
-    setStart('');
-    setEnd('');
+    resetForm();
   };
 
   const handleModifyTask = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -133,17 +114,15 @@ export function Calendar() {
         description: description.trim() || 'No description',
         status,
         start,
-        end: end.trim() === '' ? null : end,
+        end: end || null,
         createdAt: selectedTask.createdAt,
       };
       await update(taskRef, updatedTaskData);
-      const updatedTask: Task = { id: selectedTask.id, ...updatedTaskData };
-      setTasks(tasks.map((t) => (t.id === selectedTask.id ? updatedTask : t)));
+      setTasks(tasks.map((t) => (t.id === selectedTask.id ? { id: selectedTask.id, ...updatedTaskData } : t)));
       handleCloseModifyDialog();
     } catch (error) {
-      console.warn('Task update failed. Ensure all fields are valid.');
+      console.warn('Task update failed:', error);
     }
-
   };
 
   const handleOpenDeleteDialog = (task: Task) => {
@@ -162,44 +141,56 @@ export function Calendar() {
       const taskRef = ref(db, `ServiceSync/${selectedTask.id}`);
       await remove(taskRef);
       setTasks(tasks.filter((t) => t.id !== selectedTask.id));
-      handleCloseDeleteDialog(); // Close the delete dialog after deletion
-      handleCloseModifyDialog(); // Close the modify dialog after deletion
+      handleCloseDeleteDialog();
+      handleCloseModifyDialog();
     } catch (error) {
-      console.warn('Task deletion unsuccessful. Please check if the task still exists.');
+      console.warn('Task deletion unsuccessful:', error);
     }
-
   };
-
 
   const handleEventClick = (arg: EventClickArg) => {
     const task = tasks.find((t) => t.id === arg.event.id);
-    if (task) {
-      handleOpenModifyDialog(task);
-    }
+    if (task) handleOpenModifyDialog(task);
   };
 
   const renderEventContent = (eventInfo: {
     timeText: string;
     event: { title: string; extendedProps: { description: string; status: string } };
-  }) => {
-    return (
-      <>
-        <b>{eventInfo.timeText}</b> <i>{eventInfo.event.title}</i>
-        <br />
-        <small>{eventInfo.event.extendedProps.description}</small>
-      </>
-    );
+  }) => (
+    <>
+      <b>{eventInfo.timeText}</b> <i>{eventInfo.event.title}</i>
+      <br />
+      <small>{eventInfo.event.extendedProps.description}</small>
+    </>
+  );
+
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setStatus('pending');
+    setStart('');
+    setEnd('');
+    setSelectedTask(null);
+  };
+
+  // No conversion, just store the datetime-local value as-is
+  const handleDateTimeChange = (value: string) => {
+    return value || '';
+  };
+
+  // No conversion needed, the stored value is already in datetime-local format
+  const formatDateTimeLocal = (value: string) => {
+    return value || '';
   };
 
   return (
     <div style={{ padding: '20px' }}>
-
-
       <FullCalendar
-        height={400}
+        height={800}
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         weekends={true}
+        timeZone="local" // Use the system's local timezone
         events={tasks.map((task) => ({
           id: task.id,
           title: task.title,
@@ -215,16 +206,11 @@ export function Calendar() {
       <Dialog
         open={openAddDialog}
         onClose={handleCloseAddDialog}
-        PaperProps={{
-          component: 'form',
-          onSubmit: handleAddTask,
-        }}
+        PaperProps={{ component: 'form', onSubmit: handleAddTask }}
       >
-        <DialogTitle>Create a Task</DialogTitle>
+        <DialogTitle>Create an Event</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            To add a new task, please fill in the following information:
-          </DialogContentText>
+          <DialogContentText>To add a new event, please fill in the following information:</DialogContentText>
           <TextField
             autoFocus
             required
@@ -255,9 +241,7 @@ export function Calendar() {
             value={status}
             label="Status"
             fullWidth
-            onChange={(e) =>
-              setStatus(e.target.value as 'pending' | 'in-progress' | 'completed')
-            }
+            onChange={(e) => setStatus(e.target.value as 'pending' | 'in-progress' | 'completed')}
           >
             <MenuItem value="pending">Pending</MenuItem>
             <MenuItem value="in-progress">In Progress</MenuItem>
@@ -272,8 +256,8 @@ export function Calendar() {
             type="datetime-local"
             fullWidth
             variant="filled"
-            value={start ? start.slice(0, 16) : ''}
-            onChange={(e) => setStart(new Date(e.target.value).toISOString())}
+            value={formatDateTimeLocal(start)}
+            onChange={(e) => setStart(handleDateTimeChange(e.target.value))}
             InputLabelProps={{ shrink: true }}
           />
           <TextField
@@ -284,32 +268,26 @@ export function Calendar() {
             type="datetime-local"
             fullWidth
             variant="filled"
-            value={end ? end.slice(0, 16) : ''}
-            onChange={(e) => setEnd(new Date(e.target.value).toISOString())}
+            value={formatDateTimeLocal(end)}
+            onChange={(e) => setEnd(handleDateTimeChange(e.target.value))}
             InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddDialog}>Cancel</Button>
-          <Button type="submit">Add Task</Button>
+          <Button type="submit">Add Event</Button>
         </DialogActions>
       </Dialog>
-
 
       {/* Modify Task Dialog */}
       <Dialog
         open={openModifyDialog}
         onClose={handleCloseModifyDialog}
-        PaperProps={{
-          component: 'form',
-          onSubmit: handleModifyTask,
-        }}
+        PaperProps={{ component: 'form', onSubmit: handleModifyTask }}
       >
-        <DialogTitle>Edit Task</DialogTitle>
+        <DialogTitle>Edit Event</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            To modify the task, please update the following information:
-          </DialogContentText>
+          <DialogContentText>To modify the event, please update the following information:</DialogContentText>
           <TextField
             required
             margin="normal"
@@ -339,9 +317,7 @@ export function Calendar() {
             value={status}
             label="Status"
             fullWidth
-            onChange={(e) =>
-              setStatus(e.target.value as 'pending' | 'in-progress' | 'completed')
-            }
+            onChange={(e) => setStatus(e.target.value as 'pending' | 'in-progress' | 'completed')}
           >
             <MenuItem value="pending">Pending</MenuItem>
             <MenuItem value="in-progress">In Progress</MenuItem>
@@ -356,8 +332,8 @@ export function Calendar() {
             type="datetime-local"
             fullWidth
             variant="filled"
-            value={start ? start.slice(0, 16) : ''}
-            onChange={(e) => setStart(new Date(e.target.value).toISOString())}
+            value={formatDateTimeLocal(start)}
+            onChange={(e) => setStart(handleDateTimeChange(e.target.value))}
             InputLabelProps={{ shrink: true }}
           />
           <TextField
@@ -368,14 +344,14 @@ export function Calendar() {
             type="datetime-local"
             fullWidth
             variant="filled"
-            value={end ? end.slice(0, 16) : ''}
-            onChange={(e) => setEnd(new Date(e.target.value).toISOString())}
+            value={formatDateTimeLocal(end)}
+            onChange={(e) => setEnd(handleDateTimeChange(e.target.value))}
             InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseModifyDialog}>Cancel</Button>
-          <Button onClick={() => selectedTask && handleOpenDeleteDialog(selectedTask) && { handleCloseModifyDialog }} color="error">
+          <Button onClick={() => selectedTask && handleOpenDeleteDialog(selectedTask)} color="error">
             Delete
           </Button>
           <Button type="submit">Save Changes</Button>
@@ -384,22 +360,19 @@ export function Calendar() {
 
       {/* Delete Task Dialog */}
       <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Delete Task</DialogTitle>
+        <DialogTitle>Delete Event</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this task?
-          </DialogContentText>
+          <DialogContentText>Are you sure you want to delete this event?</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
           <Button onClick={handleDeleteTask}>Delete</Button>
         </DialogActions>
       </Dialog>
+
       <Button variant="contained" onClick={handleOpenAddDialog} style={{ marginTop: '20px' }}>
-        Add New Task
+        Add New Event
       </Button>
-
-
     </div>
   );
 }

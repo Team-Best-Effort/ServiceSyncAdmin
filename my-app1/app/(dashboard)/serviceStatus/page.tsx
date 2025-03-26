@@ -10,11 +10,11 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
 import { useTheme } from "@mui/material/styles";
 import { ThemeProvider } from "@mui/material/styles";
-import { ref, get } from "firebase/database"; // Firebase imports
-import { db } from "../editProfile/lib/firebase"; // Ensure this path matches your Firebase config
+import { ref, get } from "firebase/database"; 
+import { db } from "../editProfile/lib/firebase"; 
 
 export default function ServiceStatusPage() {
-  const [appStatus, setAppStatus] = React.useState<"online" | "offline">("online"); // Always online
+  const [appStatus, setAppStatus] = React.useState<"online" | "offline">("online"); 
   const [calendarDBStatus, setCalendarDBStatus] = React.useState<"online" | "offline" | null>(null);
   const [jobsDBStatus, setJobsDBStatus] = React.useState<"online" | "offline" | null>(null);
   const theme = useTheme();
