@@ -26,8 +26,36 @@ async function isAuthFirebase(email: string, password: string): Promise<boolean>
     const userCredential = await signInWithEmailAndPassword(diff_name_for_auth, email, password);
     const user = userCredential.user;
     
+    // Make sure the person signing in is not an employee
+    // Create a reference to the Authentication node
+    const authRef = ref(db, 'employees');
+
+    // Query where the 'email' child property equals the provided email
+    const authQuery = query(
+      authRef,
+      orderByChild('email'),    // Use the property name "email", not the email value
+      equalTo(email)            // Match the email value
+    );
+
+    // Execute the query
+    const snapshot = await get(authQuery);
+
+    if (snapshot.exists()) {
+      // Check if any returned entry has a matching email
+      const data = snapshot.val();
+      const users = Object.values(data); // Convert to array of user objects
+      for (const user of users) {
+        // The person logging into the admin is in the employee database, so return false.
+        if ((user as any).email === email) { // Type assertion; refine as needed
+          return false;
+        }
+      }
+    } else {
+      console.error('snapshot.exists() returned false. Possibly the rdb database is not properly set up.'); // No matching email found
+    }
     // If successful, return true (indicating authentication is successful)
     return true;
+    
   } catch (error: unknown) {
     const errorMessage = (error as Error).message; // Cast to Error type
     console.error('********Firebase auth error*******:', errorMessage);
