@@ -2,7 +2,7 @@
 import * as React from "react";
 import { DataSnapshot, ref, onValue, off, runTransaction, set, update } from "firebase/database";
 import { db } from "./lib/firebase";
-import { format } from "date-fns";
+import { format, setHours } from "date-fns";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -36,6 +36,7 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
   const [phoneNumber, setPhoneNumber] = React.useState("");
   const [dateTime, setDateTime] = React.useState("");
   const [status, setStatus] = React.useState("Assigned");
+  const [hoursWorked, setHoursWorked] = React.useState("0");
   const [description, setDescription] = React.useState("");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(true); // Add loading state
@@ -132,6 +133,7 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
     setPhoneNumber("");
     setDateTime("");
     setStatus("Assigned");
+    setHoursWorked("0");
     setDescription("");
   };
 
@@ -159,6 +161,7 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
         phoneNumber,
         dateTime,
         status,
+        hoursWorked,
         description,
       });
       setOpenCreateDialog(false);
@@ -183,6 +186,7 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
     setPhoneNumber(job.phoneNumber || employees.find(emp => emp.name === job.assignedTo)?.phoneNumber || "");
     setDateTime(job.dateTime || "");
     setStatus(job.status || "Assigned");
+    setHoursWorked(job.hoursWorked || "0");
     setDescription(job.description || "");
     setOpenModifyDialog(true);
   };
@@ -212,11 +216,12 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
         phoneNumber,
         dateTime,
         status,
+        hoursWorked,
         description,
       });
       setJobs((prevJobs) =>
         prevJobs.map((job) =>
-          job.id === selectedJob.id ? { ...job, jobType, assignedTo, address, phoneNumber, dateTime, status, description } : job
+          job.id === selectedJob.id ? { ...job, jobType, assignedTo, address, phoneNumber, dateTime, status, hoursWorked, description } : job
         )
       );
       setOpenModifyDialog(false);
@@ -325,6 +330,7 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
           );
         },
       },
+      { field: "hoursWorked", headerName: "Hours Worked", flex: 1, minWidth: 110 },
       {
         field: "actions",
         headerName: "Actions",
@@ -400,6 +406,7 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
       "Phone Number": job.phoneNumber || "N/A",
       "Description": job.description || "N/A",
       "Status": job.status || "N/A",
+      "Hours Worked": job.hoursWorked || "0",
     }));
 
     console.log("Data prepared for Excel:", data);
@@ -585,6 +592,20 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
                 onChange={(e) => setDescription(e.target.value)}
                 variant="outlined"
                 required
+                InputProps={{ style: { backgroundColor: "#2c2c2c", color: "#fff" } }}
+                InputLabelProps={{ style: { color: "#fff" } }}
+                sx={{ "& .MuiOutlinedInput-notchedOutline": { borderColor: "#555" } }}
+              />
+            </Box>
+          <Box>
+              <Typography sx={{ mb: 1, color: "#fff" }}>
+                Hours Worked
+              </Typography>
+              <TextField
+                fullWidth
+                value={hoursWorked}
+                onChange={(e) => setHoursWorked(e.target.value)}
+                variant="outlined"
                 InputProps={{ style: { backgroundColor: "#2c2c2c", color: "#fff" } }}
                 InputLabelProps={{ style: { color: "#fff" } }}
                 sx={{ "& .MuiOutlinedInput-notchedOutline": { borderColor: "#555" } }}
