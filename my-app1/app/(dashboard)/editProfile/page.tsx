@@ -75,8 +75,10 @@ export default function EditProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [showWarning, setShowWarning] = useState<boolean>(false);
 
-  
+
+
   useEffect(() => {
     if (session?.user) {
       setUserData({
@@ -89,15 +91,15 @@ export default function EditProfilePage() {
       const timer = setTimeout(() => {
         setIsLoading(false);
       }, 800);
-  
+
       return () => clearTimeout(timer);
     }
   }, [session]);
-  
-    // Display loader while loading
-    if (isLoading) {
-      return <Loader size={60} color={theme.palette.primary.main} />; // Use theme primary color for loader
-    }
+
+  // Display loader while loading
+  if (isLoading) {
+    return <Loader size={60} color={theme.palette.primary.main} />; // Use theme primary color for loader
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -135,6 +137,8 @@ export default function EditProfilePage() {
         });
 
         setSuccess(true);
+        setShowWarning(true);
+
       } else {
         throw new Error('User not found in database');
       }
@@ -165,7 +169,11 @@ export default function EditProfilePage() {
 
           {error && <Alert severity="error">⚠️ {error}</Alert>}
           {success && <Alert severity="success">Profile updated successfully! Please logout and login if you changed your email!</Alert>}
-
+          {showWarning && (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              ⚠️ If you updated the email or password, please also manually update them in Firebase Authentication. Changes here do not sync with Firebase Auth.
+            </Alert>
+          )}
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
             <StyledButton type="submit" variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}>
               {loading ? 'Saving...' : 'Save Changes'}
