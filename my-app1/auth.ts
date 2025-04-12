@@ -23,11 +23,14 @@ if (db.app.name != 'service_sync') {
 }
 async function isAuthFirebase(email: string, password: string): Promise<boolean> {  
   try {
+    //This line of code checks if the user is in the firebase authentication, regardless of if they're an admin or employee.
+    console.log('Checking if the entered credentials are in the firebase authentication system.');
     const userCredential = await signInWithEmailAndPassword(diff_name_for_auth, email, password);
     const user = userCredential.user;
     
     // Make sure the person signing in is not an employee
     // Create a reference to the Authentication node
+    console.log('Checking if the entered user is an admin. Employees cannot log into the admin app.')
     const authRef = ref(db, 'employees');
 
     // Query where the 'email' child property equals the provided email
@@ -51,14 +54,14 @@ async function isAuthFirebase(email: string, password: string): Promise<boolean>
         }
       }
     } else {
-      console.error('snapshot.exists() returned false. Possibly the rdb database is not properly set up.'); // No matching email found
+      console.log('User logging in is an admin. Login success.'); // No matching email found
     }
     // If successful, return true (indicating authentication is successful)
     return true;
     
   } catch (error: unknown) {
     const errorMessage = (error as Error).message; // Cast to Error type
-    console.error('********Firebase auth error*******:', errorMessage);
+    console.error('Check if credentials are not in firebase auth or an employee is logging into the admin site. Or read the error message here:', errorMessage);
     
     // If there's an error, return false (indicating authentication failed)
     return false;

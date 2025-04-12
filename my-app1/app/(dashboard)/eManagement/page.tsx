@@ -71,7 +71,7 @@ export default function EmployeeManagement() {
       try {
         const userCredential = await createUserWithEmailAndPassword(diff_name_for_auth, email, password);
         const user = userCredential.user;
-        console.log('*********Read********: Success adding a new user');
+        console.log('Success adding a new user');
         // Any further actions after success can go here
         let newEmployeeId;
         let exists = true;
@@ -91,7 +91,7 @@ export default function EmployeeManagement() {
         }
       } catch (error: unknown) {
         const errorMessage = (error as Error).message; // Cast to Error type
-        console.error('******Read******', errorMessage);
+        console.error('Please check spelling of email address or other fields. Also, employee may already be in the firebase auth, or already in firebase rdb. Please confirm this and remove them before adding them again.', errorMessage);
         // Any further actions after error can go here
       }
   
@@ -129,7 +129,7 @@ export default function EmployeeManagement() {
 
   // Delete Employee from Firebase
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this employee?")) return;
+    if (!confirm("Are you sure you want to delete this employee? Please also remove them from firebase auth manually as it does not occur automatically.")) return;
 
     const employeeRef = ref(db, `employees/${id}`);
     try {

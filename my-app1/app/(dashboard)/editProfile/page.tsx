@@ -171,7 +171,7 @@ export default function EditProfilePage() {
           {success && <Alert severity="success">Profile updated successfully! Please logout and login if you changed your email!</Alert>}
           {showWarning && (
             <Alert severity="warning" sx={{ mt: 2 }}>
-              ⚠️ If you updated the email or password, please also manually update them in Firebase Authentication. Changes here do not sync with Firebase Auth.
+              ⚠️ If you updated the email, please also manually update them in Firebase Authentication. Changes here do not sync with Firebase Auth.
             </Alert>
           )}
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
