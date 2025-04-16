@@ -30,10 +30,10 @@ const dummyEmployees = {
   "emp2": { id: "emp2", name: "Bob", phone: "2345678901" }
 };
 
-jest.mock("firebase/database", () => ({
+vi.mock("firebase/database", () => ({
   ref: (_db: any, path: string) => ({ path }),
   onValue: (ref: { path: string }, callback: (snapshot: { val: () => any }) => void) => {
-    let data;
+    let data: typeof dummyJobs | typeof dummyEmployees | undefined;
     if (ref.path === "jobs") {
       data = dummyJobs;
     } else if (ref.path === "employees") {
@@ -42,20 +42,20 @@ jest.mock("firebase/database", () => ({
     callback({ val: () => data });
     return () => {};
   },
-  off: jest.fn(),
-  runTransaction: jest.fn(() =>
+  off: vi.fn(),
+  runTransaction: vi.fn(() =>
     Promise.resolve({
       committed: true,
       snapshot: { val: () => "003" }
     })
   ),
-  set: jest.fn(() => Promise.resolve()),
-  update: jest.fn(() => Promise.resolve())
+  set: vi.fn(() => Promise.resolve()),
+  update: vi.fn(() => Promise.resolve())
 }));
 
-jest.mock("@toolpad/core", () => ({
+vi.mock("@toolpad/core", () => ({
   useNotifications: () => ({
-    show: jest.fn()
+    show: vi.fn()
   })
 }));
 
