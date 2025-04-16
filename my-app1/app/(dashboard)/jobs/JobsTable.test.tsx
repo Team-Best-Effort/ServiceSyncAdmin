@@ -1,88 +1,71 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
-import JobsPage from './page';
+import React from "react";
+import { render, screen, waitFor } from "@testing-library/react";
+import JobsTable from "./JobsTable";
 
-// Mock firebase/app
-vi.mock('firebase/app', () => {
-  const mockApp = {
-    options: {},
-    name: '[DEFAULT]',
-    automaticDataCollectionEnabled: false,
-  };
+const dummyJobs = {
+  "001": {
+    id: "001",
+    jobType: "Cleaning",
+    assignedTo: "Alice",
+    address: "123 Main St",
+    dateTime: new Date().toISOString(),
+    phoneNumber: "1234567890",
+    description: "Test job completed",
+    status: "Completed"
+  },
+  "002": {
+    id: "002",
+    jobType: "Delivery",
+    assignedTo: "Bob",
+    address: "456 Market St",
+    dateTime: new Date().toISOString(),
+    phoneNumber: "2345678901",
+    description: "Test job assigned",
+    status: "Assigned"
+  }
+};
 
-  return {
-    initializeApp: vi.fn(() => mockApp),
-    getApp: vi.fn(() => mockApp),
-    SDK_VERSION: '11.3.1',
-    _registerComponent: vi.fn(),
-    registerVersion: vi.fn(),
-  };
-});
+const dummyEmployees = {
+  "emp1": { id: "emp1", name: "Alice", phone: "1234567890" },
+  "emp2": { id: "emp2", name: "Bob", phone: "2345678901" }
+};
 
-// Mock firebase/auth
-vi.mock('firebase/auth', () => ({
-  getAuth: vi.fn(() => ({ app: { name: '[DEFAULT]' } })),
+jest.mock("firebase/database", () => ({
+  ref: (_db: any, path: string) => ({ path }),
+  onValue: (ref: { path: string }, callback: (snapshot: { val: () => any }) => void) => {
+    let data;
+    if (ref.path === "jobs") {
+      data = dummyJobs;
+    } else if (ref.path === "employees") {
+      data = dummyEmployees;
+    }
+    callback({ val: () => data });
+    return () => {};
+  },
+  off: jest.fn(),
+  runTransaction: jest.fn(() =>
+    Promise.resolve({
+      committed: true,
+      snapshot: { val: () => "003" }
+    })
+  ),
+  set: jest.fn(() => Promise.resolve()),
+  update: jest.fn(() => Promise.resolve())
 }));
 
-// Mock firebase/database
-vi.mock('firebase/database', () => {
-  const getMock = vi.fn();
+jest.mock("@toolpad/core", () => ({
+  useNotifications: () => ({
+    show: jest.fn()
+  })
+}));
 
-  return {
-    ref: vi.fn((path) => ({ path })),
-    get: getMock.mockImplementation(() => Promise.resolve({ exists: () => false })),
-    getDatabase: vi.fn(() => ({})),
-  };
-});
-
-describe('JobsPage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    // Reset the mock implementation to default (no jobs)
-    const getMock = require('firebase/database').get;
-    getMock.mockImplementation(() => Promise.resolve({ exists: () => false }));
-  });
-
-  it('displays a message when there are no jobs', async () => {
-    render(<JobsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('No jobs available')).toBeInTheDocument();
-    });
-  });
-
-  it('displays a table with jobs when jobs are available', async () => {
-    // Mock Firebase to return some jobs
-    const getMock = require('firebase/database').get;
-    getMock.mockImplementation(() =>
-      Promise.resolve({
-        exists: () => true,
-        val: () => ({
-          job1: { title: 'Job 1', status: 'Active', date: '2025-03-25' },
-          job2: { title: 'Job 2', status: 'Completed', date: '2025-03-24' },
-        }),
-      })
-    );
-
-    render(<JobsPage />);
-
-    await waitFor(() => {
-      // Verify table headers
-      expect(screen.getByText('ID')).toBeInTheDocument();
-      expect(screen.getByText('Title')).toBeInTheDocument();
-      expect(screen.getByText('Status')).toBeInTheDocument();
-      expect(screen.getByText('Date')).toBeInTheDocument();
-
-      // Verify job data
-      expect(screen.getByText('job1')).toBeInTheDocument();
-      expect(screen.getByText('Job 1')).toBeInTheDocument();
-      expect(screen.getByText('Active')).toBeInTheDocument();
-      expect(screen.getByText('2025-03-25')).toBeInTheDocument();
-
-      expect(screen.getByText('job2')).toBeInTheDocument();
-      expect(screen.getByText('Job 2')).toBeInTheDocument();
-      expect(screen.getByText('Completed')).toBeInTheDocument();
-      expect(screen.getByText('2025-03-24')).toBeInTheDocument();
-    });
+describe("JobsTable Component", () => {
+  it("renders dummy jobs and displays the completed status correctly", async () => {
+    render(<JobsTable />);
+    await waitFor(() => expect(screen.queryByText("Loading...")).not.toBeInTheDocument());
+    expect(screen.getByText("Test job completed")).toBeInTheDocument();
+    expect(screen.getByText("Completed")).toBeInTheDocument();
+    const completedStatus = screen.getByText("Completed");
+    expect(completedStatus).toHaveStyle("background-color: #4caf50");
   });
 });
