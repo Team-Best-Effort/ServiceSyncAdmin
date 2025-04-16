@@ -66,8 +66,8 @@ export default function HomePage() {
         }}
       >
         <Avatar
-          src={user.avatar || "Hey"}
-          alt={user.name || "Hey"}
+          src={user.avatar || "Reload to show name"}
+          alt={user.name || "Reload to show name"}
           sx={{ width: 60, height: 60 }}
         />
         <Box>
