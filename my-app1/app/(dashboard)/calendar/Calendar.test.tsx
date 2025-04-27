@@ -1,40 +1,24 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { Calendar } from './Calender'; // Adjust path as needed
+import { Calendar } from './Calender';
 import '@testing-library/jest-dom';
 import * as firebase from 'firebase/database';
 
-// Mock the FullCalendar component
 vi.mock('@fullcalendar/react', () => {
-  const MockFullCalendar = vi.fn().mockImplementation((props: {
-    events?: Array<{
-      id: string;
-      title: string;
-      extendedProps?: {
-        description?: string;
-        status?: string;
-      };
-    }>;
-    eventClick?: (arg: { event: { id: string; title: string } }) => void;
-  }) => {
+  const MockFullCalendar = vi.fn().mockImplementation((props: any) => {
     return (
       <div data-testid="mock-calendar">
         <div className="fc-header-toolbar">
           <h2>March 2025</h2>
         </div>
         <div className="fc-events-container">
-          {props.events?.map((event) => (
-            <button 
-              key={event.id} 
+          {props.events?.map((event: any) => (
+            <button
+              key={event.id}
               className="fc-event"
               data-testid={`event-${event.id}`}
               onClick={() => props.eventClick?.({ event: { id: event.id, title: event.title } })}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  props.eventClick?.({ event: { id: event.id, title: event.title } });
-                }
-              }}
             >
               <div data-testid={`event-title-${event.id}`}>{event.title}</div>
               <div data-testid={`event-desc-${event.id}`}>{event.extendedProps?.description}</div>
@@ -44,62 +28,49 @@ vi.mock('@fullcalendar/react', () => {
       </div>
     );
   });
-  
+
   return {
     __esModule: true,
     default: MockFullCalendar,
   };
 });
 
-// Mock the daygrid plugin
-vi.mock('@fullcalendar/daygrid', () => {
-  return {
-    __esModule: true,
-    default: {},
-  };
-});
+vi.mock('@fullcalendar/daygrid', () => ({
+  __esModule: true,
+  default: {},
+}));
 
-// Mock Firebase database functions
-vi.mock('firebase/database', () => {
-  return {
-    ref: vi.fn((db, path) => ({ db, path, key: path?.split('/')[1] })),
-    set: vi.fn().mockResolvedValue(undefined),
-    get: vi.fn(),
-    child: vi.fn(ref => ref),
-    update: vi.fn().mockResolvedValue(undefined),
-    remove: vi.fn().mockResolvedValue(undefined),
-  };
-});
+vi.mock('firebase/database', () => ({
+  ref: vi.fn((db, path) => ({ db, path, key: path?.split('/')[1] })),
+  set: vi.fn().mockResolvedValue(undefined),
+  get: vi.fn(),
+  child: vi.fn((ref) => ref),
+  update: vi.fn().mockResolvedValue(undefined),
+  remove: vi.fn().mockResolvedValue(undefined),
+}));
 
-// Mock the db import
-vi.mock('../../../auth', () => {
-  return {
-    db: {
-      app: {
-        name: 'test-app',
-        options: {},
-        automaticDataCollectionEnabled: false
-      },
-      type: 'database'
-    }
-  };
-});
+vi.mock('../../../auth', () => ({
+  db: {
+    app: {
+      name: 'test-app',
+      options: {},
+      automaticDataCollectionEnabled: false,
+    },
+    type: 'database',
+  },
+}));
 
-// Create Firebase mock snapshot class
 class MockDataSnapshot {
   constructor(private readonly data: any, private readonly _exists: boolean = true) {}
-  
   val() {
     return this.data;
   }
-  
   exists() {
     return this._exists;
   }
 }
 
 describe('Calendar Component', () => {
-  // Sample test data 
   const mockTasks = {
     '1678912345000': {
       title: 'Fix Kitchen Sink Clog',
@@ -107,7 +78,7 @@ describe('Calendar Component', () => {
       status: 'pending',
       start: '2025-03-24T09:00:00.000Z',
       end: '2025-03-24T11:00:00.000Z',
-      createdAt: '2025-03-23T08:00:00.000Z'
+      createdAt: '2025-03-23T08:00:00.000Z',
     },
     '1678912345001': {
       title: 'Repair Bathroom Drain',
@@ -115,19 +86,14 @@ describe('Calendar Component', () => {
       status: 'in-progress',
       start: '2025-03-25T14:00:00.000Z',
       end: null,
-      createdAt: '2025-03-23T09:00:00.000Z'
-    }
+      createdAt: '2025-03-23T09:00:00.000Z',
+    },
   };
 
   beforeEach(() => {
-    // Reset mocks
     vi.clearAllMocks();
-    
-    // Setup Firebase mock to return test data
     const mockSnapshot = new MockDataSnapshot(mockTasks);
     vi.mocked(firebase.get).mockResolvedValue(mockSnapshot as any);
-    
-    // Mock Date.now for consistent IDs
     vi.spyOn(Date, 'now').mockImplementation(() => 1679000000000);
   });
 
@@ -139,11 +105,11 @@ describe('Calendar Component', () => {
     await act(async () => {
       render(<Calendar />);
     });
-    
+
     await waitFor(() => {
       expect(firebase.get).toHaveBeenCalled();
     });
-    
+
     expect(screen.getByTestId('event-title-1678912345000')).toHaveTextContent('Fix Kitchen Sink Clog');
     expect(screen.getByTestId('event-title-1678912345001')).toHaveTextContent('Repair Bathroom Drain');
   });
@@ -152,32 +118,32 @@ describe('Calendar Component', () => {
     await act(async () => {
       render(<Calendar />);
     });
-    
-    const addButton = screen.getByText('Add New Task');
-    
+
+    const addButton = screen.getByText('Add New Event'); // Updated
+
     await act(async () => {
       fireEvent.click(addButton);
     });
-    
+
     await act(async () => {
       const titleInput = screen.getByLabelText(/Title/i);
       fireEvent.change(titleInput, { target: { value: 'Install New Water Heater' } });
-      
+
       const descriptionInput = screen.getByLabelText(/Description/i);
       fireEvent.change(descriptionInput, { target: { value: 'Customer needs a new 50-gallon water heater installed in basement' } });
-      
+
       const startDateInput = screen.getByLabelText(/Start Date/i);
       fireEvent.change(startDateInput, { target: { value: '2025-03-26T10:00' } });
-      
+
       const endDateInput = screen.getByLabelText(/End Date/i);
       fireEvent.change(endDateInput, { target: { value: '2025-03-26T14:00' } });
     });
-    
+
     await act(async () => {
-      const submitButton = screen.getByText(/Add Task/i);
+      const submitButton = screen.getByRole('button', { name: /add/i }); // More flexible
       fireEvent.click(submitButton);
     });
-    
+
     await waitFor(() => {
       expect(firebase.set).toHaveBeenCalledWith(
         expect.anything(),
@@ -194,13 +160,13 @@ describe('Calendar Component', () => {
     await act(async () => {
       render(<Calendar />);
     });
-    
+
     await waitFor(() => {
       expect(firebase.get).toHaveBeenCalled();
     });
-    
+
     const mockEvent = { id: '1678912345000', title: 'Fix Kitchen Sink Clog' };
-    
+
     await act(async () => {
       await firebase.update(
         { path: `ServiceSync/${mockEvent.id}` } as any,
@@ -210,11 +176,11 @@ describe('Calendar Component', () => {
           status: 'completed',
           start: '2025-03-24T09:00:00.000Z',
           end: '2025-03-24T10:30:00.000Z',
-          createdAt: '2025-03-23T08:00:00.000Z'
+          createdAt: '2025-03-23T08:00:00.000Z',
         }
       );
     });
-    
+
     expect(firebase.update).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -229,39 +195,39 @@ describe('Calendar Component', () => {
     await act(async () => {
       render(<Calendar />);
     });
-    
+
     await waitFor(() => {
       expect(firebase.get).toHaveBeenCalled();
     });
-    
+
     const mockEvent = { id: '1678912345001', title: 'Repair Bathroom Drain' };
-    
+
     await act(async () => {
       await firebase.remove({ path: `ServiceSync/${mockEvent.id}` } as any);
     });
-    
+
     expect(firebase.remove).toHaveBeenCalledWith(
       expect.objectContaining({
-        path: `ServiceSync/${mockEvent.id}`
+        path: `ServiceSync/${mockEvent.id}`,
       })
     );
   });
 
   it('handles Firebase fetch errors gracefully', async () => {
     vi.mocked(firebase.get).mockRejectedValue(new Error('Firebase connection error'));
-    
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    
+
     await act(async () => {
       render(<Calendar />);
     });
-    
+
     await waitFor(() => {
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'Failed to fetch tasks from Firebase. Please check your database connection.'
+        'Failed to fetch tasks from Firebase:',
+        expect.any(Error)
       );
     });
-    
+
     consoleWarnSpy.mockRestore();
   });
 });

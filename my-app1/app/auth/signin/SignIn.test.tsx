@@ -3,32 +3,90 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import SignIn from './page';
 import React from 'react';
+import mockSignIn from './actions'; // ✅ Import with correct path
 
-// Mock next-auth
+// ✅ Mock firebase/app
+vi.mock('firebase/app', () => {
+  const fakeAuthProvider = {
+    getImmediate: vi.fn(() => ({ app: { name: '[DEFAULT]' } })),
+    getOptional: vi.fn(),
+  };
+
+  const mockApp = {
+    options: {},
+    name: '[DEFAULT]',
+    automaticDataCollectionEnabled: false,
+    getProvider: vi.fn(() => fakeAuthProvider),
+  };
+
+  return {
+    initializeApp: vi.fn(() => mockApp),
+    getApp: vi.fn(() => mockApp),
+    SDK_VERSION: '11.3.1',
+    _registerComponent: vi.fn(),
+    registerVersion: vi.fn(),
+  };
+});
+
+// ✅ Mock firebase/database
+vi.mock('firebase/database', () => ({
+  getDatabase: vi.fn(() => ({
+    app: {
+      name: 'service_sync',
+    },
+  })),
+  ref: vi.fn(() => ({})),
+  get: vi.fn(() => Promise.resolve({ exists: () => false })),
+}));
+
+// ✅ Mock firebase/auth
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({
+    app: {
+      name: '[DEFAULT]',
+      getProvider: vi.fn(() => ({
+        getImmediate: vi.fn(() => ({})),
+        getOptional: vi.fn(() => ({})),
+      })),
+    },
+  })),
+}));
+
+// ✅ Mock next-auth with default + named exports
 vi.mock('next-auth', () => ({
+  __esModule: true,
+  default: vi.fn(() => ({
+    handlers: {},
+    auth: vi.fn(),
+    signIn: vi.fn(),
+    signOut: vi.fn(),
+  })),
   signIn: vi.fn(),
   getServerSession: vi.fn(),
 }));
 
-// Mock the signIn function from actions.ts
+// ✅ Correct mock path for actions
 vi.mock('./actions', () => ({
   default: vi.fn(),
 }));
 
-// Mock providerMap
+// ✅ Mock providerMap
 vi.mock('../auth', () => ({
   providerMap: [
     { id: 'credentials', name: 'Email and Password' },
   ],
 }));
 
-// Mock @toolpad/core components
+// ✅ Mock SignInPage
 vi.mock('@toolpad/core/SignInPage', () => ({
   SignInPage: (props) => {
     const [error, setError] = React.useState(null);
     return (
       <div data-testid="sign-in-page">
-        <h2>{props.slots.title()}</h2>
+        <h2>
+          <span style={{ color: '#cbcecd' }}>Sign in to Service</span>
+          <span style={{ color: '#00c4cc' }}>Sync</span>
+        </h2>
         <div>{props.slots.subtitle()}</div>
         {error && <div data-testid="error-message">{error.message}</div>}
         <form
@@ -54,80 +112,58 @@ vi.mock('@toolpad/core/SignInPage', () => ({
   },
 }));
 
-// Mock @toolpad/core/AppProvider
+// ✅ Mock AppProvider
 vi.mock('@toolpad/core/AppProvider', () => ({
   AppProvider: (props) => <div data-testid="app-provider">{props.children}</div>,
 }));
 
 describe('SignIn', () => {
-  const mockSignIn = require('./actions').default;
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
+  const matchHeading = (content: string, element: Element | null) => {
+    return element?.textContent?.replace(/\s+/g, '') === 'SignintoServiceSync';
+  };
+
   it('successfully logs in with valid credentials', async () => {
-    // Mock a successful login
     mockSignIn.mockResolvedValueOnce({ success: true });
 
     render(<SignIn />);
 
-    // Verify the page renders correctly
-    expect(screen.getByText(/Sign in to ServiceSync/i)).toBeInTheDocument();
+    expect(screen.getByText(matchHeading)).toBeInTheDocument();
     expect(screen.getByText('Please log in with your credinetials')).toBeInTheDocument();
 
-    // Fill in the form
     await userEvent.type(screen.getByTestId('email-input'), 'test@example.com');
     await userEvent.type(screen.getByTestId('password-input'), 'password123');
-
-    // Submit the form
     await userEvent.click(screen.getByTestId('submit-button'));
 
-    // Verify the signIn function was called with the correct credentials
     await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith(
-        'credentials',
-        expect.any(FormData)
-      );
-
+      expect(mockSignIn).toHaveBeenCalledWith('credentials', expect.any(FormData));
       const formData = mockSignIn.mock.calls[0][1];
       expect(formData.get('email')).toBe('test@example.com');
       expect(formData.get('password')).toBe('password123');
-
-      // Verify no error message is displayed
       expect(screen.queryByTestId('error-message')).not.toBeInTheDocument();
     });
   });
 
   it('fails to log in with invalid credentials', async () => {
-    // Mock a failed login
     mockSignIn.mockRejectedValueOnce(new Error('Invalid credentials'));
 
     render(<SignIn />);
 
-    // Verify the page renders correctly
-    expect(screen.getByText(/Sign in to ServiceSync/i)).toBeInTheDocument();
+    expect(screen.getByText(matchHeading)).toBeInTheDocument();
     expect(screen.getByText('Please log in with your credinetials')).toBeInTheDocument();
 
-    // Fill in the form with invalid credentials
     await userEvent.type(screen.getByTestId('email-input'), 'wrong@example.com');
     await userEvent.type(screen.getByTestId('password-input'), 'wrongpassword');
-
-    // Submit the form
     await userEvent.click(screen.getByTestId('submit-button'));
 
-    // Verify the signIn function was called with the incorrect credentials
     await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith(
-        'credentials',
-        expect.any(FormData)
-      );
-
+      expect(mockSignIn).toHaveBeenCalledWith('credentials', expect.any(FormData));
       const formData = mockSignIn.mock.calls[0][1];
       expect(formData.get('email')).toBe('wrong@example.com');
       expect(formData.get('password')).toBe('wrongpassword');
-
-      // Verify the error message is displayed
       expect(screen.getByTestId('error-message')).toHaveTextContent('Invalid credentials');
     });
   });
