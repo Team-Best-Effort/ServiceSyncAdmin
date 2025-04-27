@@ -65,38 +65,38 @@ export default function EmployeeManagement() {
     setPassword(""); // Reset password
   };
 
-    // Submit New Employee with custom ID and password
-    const handleSubmitEmployee = async () => {
-      if (!name || !email || !phone || !password) return;
-      try {
-        const userCredential = await createUserWithEmailAndPassword(diff_name_for_auth, email, password);
-        const user = userCredential.user;
-        console.log('Success adding a new user');
-        // Any further actions after success can go here
-        let newEmployeeId;
-        let exists = true;
-        while (exists) {
-          newEmployeeId = generateEmployeeId();
-          const checkRef = ref(db, `employees/${newEmployeeId}`);
-          const snapshot = await get(checkRef);
-          exists = snapshot.exists();
-        }
-        const newEmployeeRef = ref(db, `employees/${newEmployeeId}`);
-        const newEmployee = { name, email, phone, password }; // Include password in Firebase
-        try {
-          await set(newEmployeeRef, newEmployee);
-          setOpenCreateDialog(false);
-        } catch (error) {
-          console.warn("Could not add employee. Please try again.");
-        }
-      } catch (error: unknown) {
-        const errorMessage = (error as Error).message; // Cast to Error type
-        console.error('Please check spelling of email address or other fields. Also, employee may already be in the firebase auth, or already in firebase rdb. Please confirm this and remove them before adding them again.', errorMessage);
-        // Any further actions after error can go here
+  // Submit New Employee with custom ID and password
+  const handleSubmitEmployee = async () => {
+    if (!name || !email || !phone || !password) return;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(diff_name_for_auth, email, password);
+      const user = userCredential.user;
+      console.log('Success adding a new user');
+      // Any further actions after success can go here
+      let newEmployeeId;
+      let exists = true;
+      while (exists) {
+        newEmployeeId = generateEmployeeId();
+        const checkRef = ref(db, `employees/${newEmployeeId}`);
+        const snapshot = await get(checkRef);
+        exists = snapshot.exists();
       }
-  
-    };
-  
+      const newEmployeeRef = ref(db, `employees/${newEmployeeId}`);
+      const newEmployee = { name, email, phone, passwordChanged: false, employeeID: newEmployeeId };
+      try {
+        await set(newEmployeeRef, newEmployee);
+        setOpenCreateDialog(false);
+      } catch (error) {
+        console.warn("Could not add employee. Please try again.");
+      }
+    } catch (error: unknown) {
+      const errorMessage = (error as Error).message; // Cast to Error type
+      console.error('Please check spelling of email address or other fields. Also, employee may already be in the firebase auth, or already in firebase rdb. Please confirm this and remove them before adding them again.', errorMessage);
+      // Any further actions after error can go here
+    }
+
+  };
+
 
   // Open Edit Employee Dialog
   const handleEdit = (employee: any) => {
@@ -114,7 +114,7 @@ export default function EmployeeManagement() {
 
     const employeeRef = ref(db, `employees/${selectedEmployee.id}`);
     try {
-      
+
       await update(employeeRef, { name, email, phone });
       setEmployees((prevEmployees) =>
         prevEmployees.map((emp) =>
@@ -231,7 +231,7 @@ export default function EmployeeManagement() {
         disableColumnResize
         density="compact"
         autoHeight
-
+        
       />
 
       {/* Create Employee Dialog */}
