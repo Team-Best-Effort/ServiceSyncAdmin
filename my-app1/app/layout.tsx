@@ -34,7 +34,7 @@ const NAVIGATION: Navigation = [
   },
   {
     kind: 'header',
-    title: 'Job Management',
+    title: 'Job & Employee Management',
   },
   {
     segment: 'jobs',
@@ -47,31 +47,10 @@ const NAVIGATION: Navigation = [
     icon: <WorkHistoryOutlined />,
   },
   {
-    kind: 'divider',
-  },
-  {
-    kind: 'header',
-    title: 'Employee Management',
-  },
-  {
     segment: 'eManagement',
     title: 'Modify Employees',
     icon: <AdminPanelSettingsRounded />,
   },
-
-  {
-    kind: 'divider',
-  },
-  {
-    kind: 'header',
-    title: 'Financials',
-  },
-  {
-    segment: 'payroll',
-    title: 'Payroll',
-    icon: <ReceiptLongRounded />,
-  },
- 
   {
     kind: 'divider',
   },
@@ -91,13 +70,6 @@ const NAVIGATION: Navigation = [
     segment: 'serviceStatus',
     title: 'System Status',
     icon: <CloudSyncRounded />,
-   
-  },
-  
-  {
-    segment: 'userGuide',
-    title: 'User Guide',
-    icon: <HelpCenterRounded />,
    
   },
 ];
