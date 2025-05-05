@@ -149,10 +149,6 @@ Follow these steps to clone the repos and run the Vitest suite:
    These tests can be executed on **Windows**, **macOS**, or **Linux**—no additional setup required.
 
 
-## Testing Instructions
-- TBA, will be done in CSC 191
-
----
 
 ## <img src="https://e7.pngegg.com/pngimages/993/133/png-clipart-calendar-computer-icons-calendar-date-mount-olivet-lutheran-church-of-plymouth-time-calender-miscellaneous-calendar-thumbnail.png" width="40" height="40"> Development Timeline
 <table align="center">
