@@ -115,10 +115,39 @@ This guide will walk you through the steps required to set up the development en
 
 ---
 
-## Deployment Instructions
-- TBA, will be done in CSC 191
+## Test Environment Setup
 
----
+Follow these steps to clone the repos and run the Vitest suite:
+
+1. **Clone the repositories**  
+   ```bash
+   git clone https://github.com/Team-Best-Effort/ServiceSyncAdmin.git
+   git clone https://github.com/Team-Best-Effort/ServiceSyncEmployee.git
+   ```
+
+2. **Install dependencies**  
+   ```bash
+   cd ServiceSyncAdmin/my-app1     # navigate into admin app folder
+   npm install
+
+   cd ../../ServiceSyncEmployee/my-app1   # navigate into employee app folder
+   npm install
+   ```
+
+3. **Run a specific test**  
+   ```bash
+   cd ServiceSyncAdmin/my-app                  # or ServiceSyncEmployee/my-app1
+   npx vitest run app/dashboard/serviceStatus/ServiceStatus.test.tsx
+   ```
+
+4. **Run all tests**  
+   ```bash
+   npx vitest run
+   ```
+
+5. **Supported environments**  
+   These tests can be executed on **Windows**, **macOS**, or **Linux**—no additional setup required.
+
 
 ## Testing Instructions
 - TBA, will be done in CSC 191
@@ -150,27 +179,27 @@ This guide will walk you through the steps required to set up the development en
 <tr>
   <td>Account Creation/Login</td>
   <td>Sprint 5: January 26 to February 8, 2025</td>
-  <td>Planned</td>
+  <td>Completed</td>
 </tr>
 <tr>
   <td>Linking the API's Together</td>
   <td>Sprint 6: February 9 to February 22, 2025</td>
-  <td>Planned</td>
+  <td>Completed</td>
 </tr>
 <tr>
   <td>Implementing Code Testing</td>
   <td>Sprint 7: February 23 to March 8, 2025</td>
-  <td>Planned</td>
+  <td>Completed</td>
 </tr>
 <tr>
   <td>Overhauling the UI</td>
   <td>Sprint 8: March 9 to March 22, 2025</td>
-  <td>Planned</td>
+  <td>Completed</td>
 </tr>
 <tr>
   <td>Tech Debt & Code Cleanup</td>
   <td>Sprint 9: March 23 to April 5, 2025</td>
-  <td>Planned</td>
+  <td>Completed</td>
 </tr>
 </table>
 
