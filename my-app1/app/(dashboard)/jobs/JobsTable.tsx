@@ -348,6 +348,7 @@ const JobsTable = dynamic(() => Promise.resolve(React.memo(function JobsTableCon
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [status]
   );
 

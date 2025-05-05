@@ -93,7 +93,7 @@ export function UpcomingEvents() {
         }}
       >
         <Typography component="h2" variant="subtitle2">
-                  Today's Events
+                  Today&apos;s Events
                 </Typography>
         {/* Upcoming Events Section */}
         <Stack spacing={1}>

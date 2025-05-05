@@ -76,6 +76,7 @@ const NAVIGATION: Navigation = [
 
 const BRANDING = {
   title: 'ServiceSync',
+  // eslint-disable-next-line @next/next/no-img-element
   logo: <img src="https://i.imgur.com/Qb4GvFV.png" alt="RRP logo" />,
 };
 

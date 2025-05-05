@@ -42,7 +42,7 @@ export default function ServiceStatusPage() {
     };
 
     checkServices();
-  }, []);
+  }, [calendarDBStatus, jobsDBStatus]);
 
   return (
     <ThemeProvider theme={theme}>
