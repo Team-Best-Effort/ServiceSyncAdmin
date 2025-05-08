@@ -1,5 +1,4 @@
 "use strict";
-// functions/src/index.ts
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -30,18 +29,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authHandler = void 0;
 const functions = __importStar(require("firebase-functions"));
 const https_1 = require("firebase-functions/v2/https");
-const core_1 = require("@auth/core"); // named import
-const credentials_1 = __importDefault(require("@auth/core/providers/credentials")); // example provider
-const { secret, trust_host } = functions.config().auth;
+const core_1 = require("@auth/core");
+const credentials_1 = __importDefault(require("@auth/core/providers/credentials"));
+const cfg = functions.config().auth;
+console.log("auth config at startup:", cfg);
 exports.authHandler = (0, https_1.onRequest)(async (req, res) => {
+    console.log("trust_host flag is:", cfg.trust_host);
+    // build a Fetch-style Request for Auth.js
     const fetchReq = new Request(req.url, {
         headers: new Headers(req.headers),
         method: req.method,
         body: req.rawBody,
     });
     const authRes = await (0, core_1.Auth)(fetchReq, {
-        secret,
-        trustHost: true,
+        secret: cfg.secret,
+        // make sure we coerce the string to a boolean:
+        trustHost: cfg.trust_host === "true",
         providers: [
             (0, credentials_1.default)({
                 name: "Credentials",
@@ -50,18 +53,14 @@ exports.authHandler = (0, https_1.onRequest)(async (req, res) => {
                     password: { label: "Password", type: "password" }
                 },
                 authorize: async (creds) => {
-                    if (creds.username === "foo" && creds.password === "bar") {
-                        return { id: "1", name: "Foo" };
-                    }
-                    return null;
+                    // your logic…
+                    return creds.username === "foo" ? { id: "1", name: "Foo" } : null;
                 }
-            }),
-        ],
+            })
+        ]
     });
+    // forward Auth.js’s response
     res.status(authRes.status);
-    authRes.headers.forEach((value, name) => {
-        res.setHeader(name, value);
-    });
-    const bodyText = await authRes.text();
-    res.send(bodyText);
+    authRes.headers.forEach((value, name) => res.setHeader(name, value));
+    res.send(await authRes.text());
 });

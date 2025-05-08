@@ -1,13 +1,15 @@
-// functions/src/index.ts
-
 import * as functions from "firebase-functions";
 import { onRequest } from "firebase-functions/v2/https";
-import { Auth } from "@auth/core";            // named import
-import CredentialsProvider from "@auth/core/providers/credentials"; // example provider
+import { Auth } from "@auth/core";
+import CredentialsProvider from "@auth/core/providers/credentials";
 
-const { secret, trust_host } = functions.config().auth;
+const cfg = functions.config().auth;
+console.log("auth config at startup:", cfg);
 
 export const authHandler = onRequest(async (req, res) => {
+  console.log("trust_host flag is:", cfg.trust_host);
+
+  // build a Fetch-style Request for Auth.js
   const fetchReq = new Request(req.url, {
     headers: new Headers(req.headers as any),
     method: req.method,
@@ -15,8 +17,9 @@ export const authHandler = onRequest(async (req, res) => {
   });
 
   const authRes = await Auth(fetchReq, {
-    secret,
-    trustHost: true,
+    secret: cfg.secret,
+    // make sure we coerce the string to a boolean:
+    trustHost: cfg.trust_host === "true",
     providers: [
       CredentialsProvider({
         name: "Credentials",
@@ -24,22 +27,16 @@ export const authHandler = onRequest(async (req, res) => {
           username: { label: "Username", type: "text" },
           password: { label: "Password", type: "password" }
         },
-        authorize: async (creds) => {
-          if (creds.username === "foo" && creds.password === "bar") {
-            return { id: "1", name: "Foo" };
-          }
-          return null;
+        authorize: async creds => {
+          // your logic…
+          return creds.username === "foo" ? { id: "1", name: "Foo" } : null;
         }
-      }),
-    ],
+      })
+    ]
   });
 
+  // forward Auth.js’s response
   res.status(authRes.status);
-
-  authRes.headers.forEach((value, name) => {
-    res.setHeader(name, value);
-  });
-
-  const bodyText = await authRes.text();
-  res.send(bodyText);
+  authRes.headers.forEach((value, name) => res.setHeader(name, value));
+  res.send(await authRes.text());
 });
