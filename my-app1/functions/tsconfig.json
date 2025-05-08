@@ -1,17 +1,15 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "esModuleInterop": true,
-    "moduleResolution": "nodenext",
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "outDir": "lib",
-    "sourceMap": true,
+    "target": "ES2020",
+    "module": "commonjs",
     "strict": true,
-    "target": "es2017"
-  },
-  "compileOnSave": true,
-  "include": [
-    "src"
-  ]
+    "esModuleInterop": true,        // allows `import { Auth } …` to work reliably
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "lib": [
+      "ES2020", 
+      "DOM"                       // <-- gives you Request, Response, Headers, etc.
+    ]
+  }
 }
+

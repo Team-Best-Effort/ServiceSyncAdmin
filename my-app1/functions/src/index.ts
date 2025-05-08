@@ -1,18 +1,45 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+// functions/src/index.ts
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
 import * as functions from "firebase-functions";
-const AUTH_SECRET = functions.config().auth.secret;
+import { onRequest } from "firebase-functions/v2/https";
+import { Auth } from "@auth/core";            // named import
+import CredentialsProvider from "@auth/core/providers/credentials"; // example provider
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+const { secret, trust_host } = functions.config().auth;
+
+export const authHandler = onRequest(async (req, res) => {
+  const fetchReq = new Request(req.url, {
+    headers: new Headers(req.headers as any),
+    method: req.method,
+    body: req.rawBody,
+  });
+
+  const authRes = await Auth(fetchReq, {
+    secret,
+    trustHost: trust_host === "true",
+    providers: [
+      CredentialsProvider({
+        name: "Credentials",
+        credentials: {
+          username: { label: "Username", type: "text" },
+          password: { label: "Password", type: "password" }
+        },
+        authorize: async (creds) => {
+          if (creds.username === "foo" && creds.password === "bar") {
+            return { id: "1", name: "Foo" };
+          }
+          return null;
+        }
+      }),
+    ],
+  });
+
+  res.status(authRes.status);
+
+  authRes.headers.forEach((value, name) => {
+    res.setHeader(name, value);
+  });
+
+  const bodyText = await authRes.text();
+  res.send(bodyText);
+});
