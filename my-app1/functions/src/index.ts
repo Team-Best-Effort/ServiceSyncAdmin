@@ -16,7 +16,7 @@ export const authHandler = onRequest(async (req, res) => {
 
   const authRes = await Auth(fetchReq, {
     secret,
-    trustHost: trust_host === "true",
+    trustHost: true,
     providers: [
       CredentialsProvider({
         name: "Credentials",
