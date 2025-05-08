@@ -41,7 +41,7 @@ exports.authHandler = (0, https_1.onRequest)(async (req, res) => {
     });
     const authRes = await (0, core_1.Auth)(fetchReq, {
         secret,
-        trustHost: trust_host === "true",
+        trustHost: true,
         providers: [
             (0, credentials_1.default)({
                 name: "Credentials",
