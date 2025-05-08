@@ -34,7 +34,7 @@ function DemoInfo() {
       },
     }}
   >
-    Please log in with your credinetials
+    Please log in with your credentials
   </Alert>
   );
 }
